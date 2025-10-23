@@ -10,8 +10,6 @@ This repository contains **interactive Swift Playgrounds** designed to help you 
 2. Open `basicoperators.playground` in **Xcode** or **Swift Playgrounds**.
 3. Go to `Editor > Show Rendered Markup` for better reading experience.
 
-Run the code on each page and experiment with it!
-
 ---
 
 ## Example Preview
