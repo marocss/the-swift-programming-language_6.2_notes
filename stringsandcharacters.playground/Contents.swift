@@ -180,3 +180,61 @@ print(#"6 times 7 is \#(6 * 7)"#)
 //: In both cases, "é" is represented as a single Swift Character value that represents an extended grapheme cluster. In the first case, it contains a single scalar, in the second case it's a cluster of two scalars.
 let eAcute: Character = "\u{E9}"
 let combinedEAcute: Character = "\u{65}\u{301}"
+
+//: Extended grapheme clusters are a flexible way to represent many complex script characters as a single Character value. Hangul syllables (Korean alphabet), for example, can be represented as either a precomposed or decomposed sequence. Both qualify as a single Character value in Swift.
+let precomposed: Character = "\u{D55C}"     //: 한
+let decomposed: Character = "\u{1112}\u{1161}\u{11AB}"      //: ᄒ, ᅡ, ᆫ
+
+//: Extended grapheme clusters enable scalars for enclosing marks (COMBINING ENCLOSING CIRCLE, U+20DD) to enclose other Unicode scalars as a single Character value.
+let enclosedEAcute: Character = "\u{E9}\u{20dd}"
+///the order matters
+
+//: Unicode scalars for regional indicator symbols can be combined in pairs to make a single Character value. REGIONAL INDICATOR SYMBOL LETTER U (U+1F1FA) and REGIONAL INDICATOR SYMBOL S (U+1F1F8)
+let regionalIndicatorForUS: Character = "\u{1F1FA}\u{1F1F8}"
+let regionalIndicatorForBR: Character = "\u{1F1E7}\u{1F1F7}"
+
+//: ## Counting Characters
+//: Use the count property of the string to retrieve a count of Character values.
+let unusualMenagerie = "Koala 🐨, Platypus 🦜, Pufferfish 🐠"
+print("unusualMenagerie has \(unusualMenagerie.count) characters")
+
+//: Swift's use of extended grapheme clusters for Character values means that string concatenation and modification may not always affect a string's character count.  \
+//: If you initialize a new string with the word "cafe" and append a COMBINING ACUTE ACCENT (U+0301) to the end, the resulting string will still have 4 characters, with a fourth character of "é".
+var word = "cafe"
+print("the number of characters in \(word) is \(word.count)")
+
+word += "\u{301}"
+print("the number of characters in \(word) is \(word.count)")
+
+//: > Extended grapheme clusters can be composed of multiple Unicode scalars. Different characters, and different representations of the same character, can require different amounts of memory. Characters in Swift don't each take up the same amount of memory within a string's representation. As a result, the number of characters in a string can't be calculated without iterating through the string to determine its extended grapheme cluster boundaries. In particularly long string values, be aware that the `count` property must iterate over the Unicode scalars in the entire string to determine the characters for that string.
+//: > The character count isn’t always the same as the length property of an NSString with the same characters. The length of an NSString is based on the number of 16-bit code units within the string's UTF-16 representation and not the number of Unicode extended grapheme clusters.
+
+//: ## Accessing and Modifying a String
+//: Use methods, properties, or subscript syntax to access and modify a string.
+
+//: ### String Indices
+//: String values have an associated index type (String.Index) that corresponds to the position of each Character.  \
+//: Because different characters can require different amounts of memory each Unicode scalar must be iterated over to determine a Character particular position. For this reason, Swift strings can't be indexed by integer values.  \
+//: The startIndex property is used to access the position of the first Character of a String. The endIndex property is the position after the last character. Therefore, endIndex is an invalid argument to a string's subscript. These values are equal when a String is empty.  \
+//: The String methods index(before:) and index(after:) are used to access the indices before and after a given index.  \
+//: Subscript syntax can be used to access the Character at a String index.
+let greeting = "Guten Tag!"
+greeting[greeting.startIndex]
+greeting[greeting.index(before: greeting.endIndex)]
+greeting[greeting.index(after: greeting.startIndex)]
+
+let index = greeting.index(greeting.startIndex, offsetBy: 7)
+greeting[index]
+///index outise string's range or Character at an index outside of a string's range trigger a runtime error. Swift/StringCharacterView.swift:158: Fatal error: String index is out of bounds
+//greeting[greeting.endIndex]
+//greeting.index(after: greeting.endIndex)
+
+//: The indices property can be used to access all indices of individual characters in a string.
+for index in greeting.indices {
+    print("\(greeting[index]) ", terminator: "")
+}
+
+//: > The properties startIndex and endIndex and the methods index(before:), index(after:), and index(_:offsetBy:) can be used on any type that conforms to the Collection protocol (String, Array, Dictionary, and Set).
+
+//: ### Inserting and Removing
+
