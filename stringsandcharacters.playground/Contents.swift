@@ -235,6 +235,104 @@ for index in greeting.indices {
 }
 
 //: > The properties startIndex and endIndex and the methods index(before:), index(after:), and index(_:offsetBy:) can be used on any type that conforms to the Collection protocol (String, Array, Dictionary, and Set).
+// > Personal Note: Dictionary and Set do not conform to RangeReplaceableCollection, so they don’t have insert(_:at:), insert(contentsOf:at:), or removeSubrange(_:) https://stackoverflow.com/questions/64433629/dictionary-and-set-are-rangereplaceablecollection
+
 
 //: ### Inserting and Removing
+//: The insert(_:at:) method is used to insert a single character into a string at a specified index. To insert the contents of another string at a specified index, use the insert(contentsOf:at:) method.
+var welcomeAgain = "Hello"
+welcomeAgain.insert("!", at: welcomeAgain.endIndex)
 
+welcomeAgain.insert(contentsOf: " there", at: welcomeAgain.index(before: welcomeAgain.endIndex))
+
+//: To remove a single character use the remove(at:) method. To remove a substring at a specified range use the removeSubrange(_:) method.
+welcomeAgain.remove(at: welcomeAgain.index(before: welcomeAgain.endIndex))
+
+let range = welcomeAgain.index(welcomeAgain.endIndex, offsetBy: -6)..<welcomeAgain.endIndex
+welcomeAgain.removeSubrange(range)
+
+//: > The methods insert(_:at:), insert(contentsOf:at:), remove(at:), and removeSubrange(_:) can be used on any type that conforms to the RangeReplaceableCollection protocol. This includes types such as Array, Dictionary and Set.
+
+//: ## Substrings
+//: When getting a substring from a string the result is an instance of [Substring](https://developer.apple.com/documentation/swift/substring), not another string. Substrings have most of the same methods. Unlike strings, substrings are used only for a short amount of time while performing actions on a string. To store the result for a longer time, convert the substring to an instance of String.
+let anotherGreeting = "Hello, playground"
+let anotherIndex = anotherGreeting.firstIndex(of: ",") ?? anotherGreeting.endIndex
+let beginning = anotherGreeting[..<anotherIndex]
+
+let newString = String(beginning)
+
+//: Each substring has a region of memory where the characters that make up the substring are stored. As a performance optimization, a substring can reuse part of the memory that's used to store the original string, or part of the memory that's used to store another substring. (Strings have a similar optimization, but if two strings share memory, they're equal.) This performance optimization means you don't have to pay the performance cost of copying memory until you modify either the string or substring. Substrings are not suitable for long-term storage because they reuse the storage of the original string, the entire original string must be kept in memory as long as any of its substrings are being used.
+
+//: ![string-substring](stringSubstring@2x.png)
+
+//: > String and Substring conform to the [StringProtocol](https://developer.apple.com/documentation/swift/stringprotocol), which means it's often convenient for string-manipulation functions to accept a StringProtocol value. You can call such functions with either a String or Substring value.
+
+//: ## Comparing Strings
+//: Swift provides three ways to compare textual values: string and character equality, prefix equality, and suffix equality.
+
+//: ### String and Character Equality
+//: Checked with the "equal to" operator (==) and the "not equal to" operator (!=).
+let anotherQuotation = "We're not alike, you and I."
+let sameQuotation = "We're not alike, you and I."
+if anotherQuotation == sameQuotation {
+    print("These two strings are equal.")
+}
+
+//: Two String values (or Character values) are considered equal if their extended grapheme clusters are canonically equivalent. Extended grapheme clusters are canonically equivalent if they have the same linguistic meaning and appearance, even if they're composed from different Unicode scalars.
+//: LATIN SMALL LETTER E WITH ACUTE (U+00E9) is canonically equivalent to LATIN SMALL LETTER E (U+0065) followed by COMBINING ACUTE ACCENT (U+0301).
+let eAcuteQuestion = "Voulez-vous un caf\u{E9}?"
+
+let combinedEAcuteQuestion = "Voulez-vous un caf\u{65}\u{301}?"
+
+if eAcuteQuestion == combinedEAcuteQuestion {
+    print("These two strings are equal.")
+}
+
+//: Conversely, LATIN CAPITAL LETTER A (U+0041, or "A"), is _not_ equivalent to CYRILLIC CAPITAL LETTER A (U+0410, or "А"), as used in Russian. The characters are visually similar, but don't have the same linguistic meaning.
+let latinA: Character = "\u{41}"
+let cyrillicA: Character = "\u{0410}"
+
+if latinA != cyrillicA {
+    print("These two characters are not equivalent.")
+}
+
+//: > String and character comparisons in Swift aren't locale-sensitive.
+
+//: ### Prefix and Suffix Equality
+//: To check for a particular prefix or suffix in a string use the string's hasPrefix(_:) and hasSuffix(_:) methods. Both take a single argument of type String and return a Boolean value.
+let romeoAndJuliet = [
+    "Act 1 Scene 1: Verona, A public place",
+    "Act 1 Scene 2: Capulet's mansion",
+    "Act 1 Scene 3: A room in Capulet's mansion",
+    "Act 1 Scene 4: A street outside Capulet's mansion",
+    "Act 1 Scene 5: The Great Hall in Capulet's mansion",
+    "Act 2 Scene 1: Outside Capulet's mansion",
+    "Act 2 Scene 2: Capulet's orchard",
+    "Act 2 Scene 3: Outside Friar Lawrence's cell",
+    "Act 2 Scene 4: A street in Verona",
+    "Act 2 Scene 5: Capulet's mansion",
+    "Act 2 Scene 6: Friar Lawrence's cell"
+]
+
+//: Using hasPrefix(_:) method to count the number of scenes in Act 1
+var act1Count = 0
+for scene in romeoAndJuliet {
+    if scene.hasPrefix("Act 1") {
+        act1Count += 1
+    }
+}
+print("There are \(act1Count) scenes in Act 1.")
+
+//: Using hasSuffix(_:) method to count the number of scenes that take place in or around Capulet's mansion and Friar Lawrence's cell
+var mansionCount = 0
+var cellCount = 0
+for scene in romeoAndJuliet {
+    if scene.hasSuffix("Capulet's mansion") {
+        mansionCount += 1
+    } else if scene.hasSuffix( "Friar Lawrence's cell") {
+        cellCount += 1
+    }
+}
+print("\(mansionCount) scenes take place in or around Capulet's mansion, and \(cellCount) scenes take place in or around Friar Lawrence's cell.")
+
+//: > The hasPrefix(_:) and hasSuffix(_:) methods perform a character-by-character canonical equivalence comparison between the extended grapheme clusters in each string.
