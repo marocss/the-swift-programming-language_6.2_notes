@@ -235,7 +235,7 @@ for index in greeting.indices {
 }
 
 //: > The properties startIndex and endIndex and the methods index(before:), index(after:), and index(_:offsetBy:) can be used on any type that conforms to the Collection protocol (String, Array, Dictionary, and Set).
-// > Personal Note: Dictionary and Set do not conform to RangeReplaceableCollection, so they don’t have insert(_:at:), insert(contentsOf:at:), or removeSubrange(_:) https://stackoverflow.com/questions/64433629/dictionary-and-set-are-rangereplaceablecollection
+//: > Personal Note: Dictionary and Set do not conform to RangeReplaceableCollection, so they don’t have insert(_:at:), insert(contentsOf:at:), or removeSubrange(_:) https://stackoverflow.com/questions/64433629/dictionary-and-set-are-rangereplaceablecollection
 
 
 //: ### Inserting and Removing
@@ -336,3 +336,47 @@ for scene in romeoAndJuliet {
 print("\(mansionCount) scenes take place in or around Capulet's mansion, and \(cellCount) scenes take place in or around Friar Lawrence's cell.")
 
 //: > The hasPrefix(_:) and hasSuffix(_:) methods perform a character-by-character canonical equivalence comparison between the extended grapheme clusters in each string.
+
+//: ## Unicode Representations of Strings
+//: When a Unicode string is written to a text file or some other storage, the Unicode scalars in that string are encoded in one of the Unicode-defined _encoding forms_. Each form encodes the string in small chunks known as _code units_. These include the UTF-8 encoding form (encodes string as 8-bit code units), the UTF-16 encoding form (encodes a string as 16-bit code units), and the UTF-32 encoding form (encodes a string as 32-bit code units).  \
+//: Swift provides several ways to access Unicode representations of strings. You can iterate with a `for-in` statement to access its individual `Character` values as Unicode extended grapheme clusters.  \
+//: Alternatively, access a `String` value in one of three other Unicode-compliant representations:
+//: * A collection of UTF-8 code units (accessed with the string's `utf8` property)
+//: * A collection of UTF-16 code units (accessed with the string's `utf16` property)
+//: * A collection of 21-bit Unicode scalar values, equivalent to the string's UTF-32 encoding form (accessed with the string's `unicodeScalars` property)
+//: Examples with a different representation of the string (characters D, o, g, ‼ (DOUBLE EXCLAMATION MARK, Unicode scalar U+203C), and the 🐶 character (DOG FACE, Unicode scalar U+1F436)
+let dogString = "Dog‼🐶"
+
+//: ### UTF-8 Representation
+//: The `utf8` property is of type `String.UTF8View`, which is a collection of unsigned 8-bit (UInt8) values, one for each byte in the string's UTF-8 representation:  \
+//: ![utf-representation](UTF8@2x.png)
+for codeUnit in dogString.utf8 {
+    print("\(codeUnit) ", terminator: "")
+}
+print()
+
+//: ### UTF-16 Representation
+//: You can access a UTF-16 representation of a `String` by iterating over its utf16 property. The property is of type `String.UTF16View`. A collection of unsigned 16-bit (UInt16) values, one for each 16-bit code unit.  \
+//: ![utf-representation](UTF16@2x.png)
+for codeUnit in dogString.utf16 {
+    print("\(codeUnit) ", terminator: "")
+}
+print()
+
+//: The first three UTF-16 code units are the ASCII letters D, o, g, so their numeric values match the ASCII code points and also match the UTF-8 byte values for those characters.  \
+//: The fourth `codeUnit` (8252) is a decimal equivalent of the hexadecimal `203C` (Unicode scalar U+203C). It can be represented as a single code unit in UTF-16.  \
+//: The fifth and sixth `codeUnit` values (55357 and 56374) are a UTF-16 surrogate pair representation of the DOG FACE character. These values are a high-surrogate value of U+D83D (decimal value 55357) and low-surrogate value of U+DC36 (decimal value 56374).
+
+//: ### Unicode Scalar Representation
+//: The `String` property `unicodeScalars` is of type `UnicodeScalarView`, which is a collection of values of type UnicodeScalar.
+//: Each `UnicodeScalar` has a `value` property that returns the scalar's 21-bit value, represented within a UInt32 value.  \
+//: ![unicode-scalar-representation](UnicodeScalar@2x.png)
+for scalar in dogString.unicodeScalars {
+    print("\(scalar.value) ", terminator: "")
+}
+print()
+
+//: Each `UnicodeScalar` value can also be used to construct a new `String` value, such as with string interpolation:
+for scalar in dogString.unicodeScalars {
+    print("\(scalar)")
+}
